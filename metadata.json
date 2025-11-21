@@ -1,0 +1,7 @@
+{
+  "name": "VoltMind EV Companion",
+  "description": "Intelligent EV dashboard providing range estimates, nearest charging stations, and historical analytics using Gemini AI.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

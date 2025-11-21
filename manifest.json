@@ -1,0 +1,16 @@
+{
+  "short_name": "VoltMind",
+  "name": "VoltMind EV Companion",
+  "icons": [
+    {
+      "src": "https://unpkg.com/lucide-static@0.321.0/icons/zap.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
+  "orientation": "portrait"
+}
