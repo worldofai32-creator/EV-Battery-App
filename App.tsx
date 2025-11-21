@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { Activity, History, Save, RotateCcw, PlayCircle, StopCircle, AlertTriangle } from 'lucide-react';
+import { Activity, History, Save, RotateCcw, PlayCircle, StopCircle, AlertTriangle, MapPin } from 'lucide-react';
 import BatteryDisplay from './components/BatteryDisplay';
 import StationFinder from './components/StationFinder';
 import AnalyticsChart from './components/AnalyticsChart';
@@ -48,25 +49,43 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Handle Manual Save
+  // Handle Manual Save with Geolocation
   const handleSaveReading = () => {
     if (!currentEstimates) return;
-    
-    const newReading: EVReading = {
-      id: Date.now().toString(),
-      timestamp: Date.now(),
-      batteryPercentage: batteryLevel,
-      estimatedRangeKm: currentEstimates.rangeKm,
-      estimatedTimeHours: currentEstimates.timeLeftHours,
-      notes: currentEstimates.efficiencyNote
-    };
 
-    setHistory(prev => [newReading, ...prev]);
+    const saveToHistory = (lat?: number, lng?: number) => {
+      const newReading: EVReading = {
+        id: Date.now().toString(),
+        timestamp: Date.now(),
+        batteryPercentage: batteryLevel,
+        estimatedRangeKm: currentEstimates.rangeKm,
+        estimatedTimeHours: currentEstimates.timeLeftHours,
+        notes: currentEstimates.efficiencyNote,
+        latitude: lat,
+        longitude: lng
+      };
+      setHistory(prev => [newReading, ...prev]);
+    };
+    
+    // Attempt to get location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          saveToHistory(position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          console.warn("Location access denied or unavailable:", error);
+          saveToHistory(); // Save without location
+        },
+        { timeout: 5000 }
+      );
+    } else {
+      saveToHistory();
+    }
   };
 
   // Simulation Effect (Drain battery over time)
   useEffect(() => {
-    // Fix: Use ReturnType<typeof setInterval> to avoid NodeJS namespace dependency
     let interval: ReturnType<typeof setInterval>;
     if (isSimulating) {
       interval = setInterval(() => {
@@ -77,7 +96,6 @@ const App: React.FC = () => {
           }
           const newLevel = Math.max(0, prev - 1);
           // Trigger estimate update silently for the simulation effect
-          // In a real app, we might debounce this. Here we just do it.
           getEVEstimates(newLevel, new Date().toLocaleTimeString()).then(est => setCurrentEstimates(est));
           return newLevel;
         });
@@ -229,6 +247,14 @@ const App: React.FC = () => {
                           <span className="block text-xs text-slate-500">Time Left</span>
                           {item.estimatedTimeHours.toFixed(1)} hr
                         </div>
+                        
+                        {/* Location display if available */}
+                        {item.latitude && item.longitude && (
+                          <div className="col-span-2 mt-2 pt-2 border-t border-slate-700/50 flex items-center text-xs text-slate-400">
+                            <MapPin className="w-3 h-3 mr-1.5 text-slate-500" />
+                            <span>Lat: {item.latitude.toFixed(4)}, Lng: {item.longitude.toFixed(4)}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))

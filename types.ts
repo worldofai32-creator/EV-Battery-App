@@ -1,3 +1,4 @@
+
 export interface EVReading {
   id: string;
   timestamp: number;
@@ -5,6 +6,8 @@ export interface EVReading {
   estimatedRangeKm: number;
   estimatedTimeHours: number;
   notes?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface ChargingStation {
